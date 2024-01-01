@@ -1,0 +1,204 @@
+% Set up audio recording parameters
+fs = 44100;         % Sampling frequency (Hz)
+bitsPerSample = 16; % Bits per sample
+duration = 10;      % Recording duration in seconds
+
+% Record the first segment
+disp('Recording the first segment. Speak now.');
+recorder1 = audiorecorder(fs, bitsPerSample, 1);
+recordblocking(recorder1, duration);
+
+% Save the first segment
+input1 = getaudiodata(recorder1);
+audiowrite('input1.wav', input1, fs);
+
+disp('First segment recorded and saved.');
+
+% Record the second segment
+disp('Recording the second segment. Speak now.');
+recorder2 = audiorecorder(fs, bitsPerSample, 1);
+recordblocking(recorder2, duration);
+
+% Save the second segment
+input2 = getaudiodata(recorder2);
+audiowrite('input2.wav', input2, fs);
+
+disp('Second segment recorded and saved.');
+
+
+
+
+
+
+
+
+
+[x, fs] = audioread ('input1.wav');
+[y, fs] = audioread('input2.wav');
+filteredX=filter(Hd,x); 
+filteredY=filter(Hd, y) ;
+
+% Play the original signal
+disp('Playing Original Signal...');
+sound(y, fs) ;
+pause;
+ % Play the filtered signal
+disp ('Playing Filtered signal...');
+ sound (filteredY, fs) ;
+% Play the original signal
+% Frequency response
+[H, Freq] = freqz(Hd);
+
+% Plotting magnitude response
+figure;
+subplot(2,1,1);
+plot(Freq, 20*log10(abs(H)));
+title('Magnitude Response');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)');
+grid on;
+
+
+
+
+
+
+
+
+
+Fcarrier1 = 17000;
+Fcarrier2 = 13000;
+% Read the audio files
+[x1, fs1] = audioread('input1.wav');
+[x2, fs2] = audioread('input2.wav');
+
+filteredX=filter(Hd,x1); 
+filteredY=filter(Hd, x2);
+
+% Normalize the signals to ensure they have the same amplitude
+x1_normalized = filteredX / max(abs(filteredX));
+x2_normalized = filteredY / max(abs(filteredY));
+t1 = 0:1/fs1:(length(x1_normalized)-1)/fs1;
+t2 = 0:1/fs2:(length(x2_normalized)-1)/fs2;
+carrier_wave1 = cos(2*pi*Fcarrier1*t1(1:length(x1_normalized)));
+carrier_wave2 = cos(2*pi*Fcarrier2*t2(1:length(x2_normalized)));
+modulated_signal1 = x1_normalized .* carrier_wave1';
+modulated_signal2 = x2_normalized .* carrier_wave2';
+
+demodulated_signal1 = modulated_signal1 .* carrier_wave1';
+demodulated_signal2 = modulated_signal2 .* carrier_wave2';
+
+% Play the demodulated signals
+out1_filtered = filter(Hd, demodulated_signal1);
+audiowrite('output1.wav', out1_filtered, fs1);
+out2_filtered = filter(Hd, demodulated_signal2);
+audiowrite('output2.wav', out2_filtered, fs2);
+disp('Playing demodulated signals...');
+signal1_demodulatedandfiltered = audioplayer(out1_filtered, fs1);
+play(signal1_demodulatedandfiltered);
+pause(10);
+signal2_demodulatedandfiltered = audioplayer(out2_filtered, fs2);
+play(signal2_demodulatedandfiltered );
+% Perform the Fourier transform on the sum of modulated signals
+fft_out1_filtered= fftshift(fft(out1_filtered));
+
+% Frequency axis for the FFT
+N = length(out1_filtered);
+f = (-fs1/2):(fs1/N):(fs1/2 - fs1/N);
+% Plot the frequency response
+subplot(5, 1, 3);
+plot(f, abs(fft_out1_filtered));
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+title('Frequency Response of outpu1 Signal');
+% Perform the Fourier transform on the sum of modulated signals
+fft_out2_filtered = fftshift(fft(out2_filtered));
+% Frequency axis for the FFT
+N = length(out2_filtered);
+f = (-fs2/2):(fs1/N):(fs2/2 - fs2/N);
+% Plot the frequency response
+subplot(5, 1, 4);
+plot(f, abs(fft_out2_filtered));
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+title('Frequency Response of outpu2 Signal');
+
+
+
+
+[x, fs1] = audioread ('input1.wav');
+[y, fs2] = audioread('input2.wav');
+filteredX=filter(Hd,x); 
+filteredY=filter(Hd, y) ;
+
+Fcarrier1 =17000;
+Fcarrier2 = 13000;
+% Normalize the signals to ensure they have the same amplitude
+x_normalized = X / max(abs(x));
+y_normalized = Y / max(abs(y));
+t1 = 0:1/fs1:(length(x_normalized)-1)/fs1;
+t2 = 0:1/fs2:(length(y_normalized)-1)/fs2;
+carrier_wave1 = cos(2*pi*Fcarrier1*t1(1:length(x_normalized)));
+carrier_wave2 = cos(2*pi*Fcarrier2*t2(1:length(y_normalized)));
+% Multiplexing: Interleave the samples
+multiplexed_signal = [carrier_wave1; carrier_wave2];
+
+
+modulated_signal1 = x_normalized .* carrier_wave1';
+modulated_signal2 = y_normalized .* carrier_wave2';
+sum_modulated = modulated_signal1 + modulated_signal2;
+% Demultiplexing: Extract the original signals
+demux_signal1 = multiplexed_signal(1, :);
+demux_signal2 = multiplexed_signal(2, :);
+
+% Perform the Fourier transform on the sum of modulated signals
+fft_sum_modulated = fftshift(fft(sum_modulated));
+
+% Frequency axis for the FFT
+N = length(sum_modulated);
+f = (-fs1/2):(fs1/N):(fs1/2 - fs1/N);
+
+% Plot the frequency response
+subplot(5, 1, 3);
+plot(f, abs(fft_sum_modulated));
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+title('Frequency Response of Amplitude-Modulated Signal');
+
+
+
+
+[x, fs]=audioread('input1.wav');
+N=length(x);
+X=fft(x,N);
+f=(-N/2:N/2-1)*fs/N;
+subplot(1,2,1)
+plot(f,abs(fftshift(X))/N); title("before filter signal1")
+filx=filteredX;
+filX=fft(filx,N);
+f=(-N/2:N/2-1)*fs/N;
+subplot(1,2,2)
+plot(f,abs(fftshift(filX))/N); title("after filter signal1")
+
+
+
+
+[y, fs]=audioread('input2.wav');
+N=length(y);
+X=fft(y,N);
+f=(-N/2:N/2-1)*fs/N;
+subplot(1,2,1)
+plot(f,abs(fftshift(Y))/N); title("before filter signal2")
+fily=filteredY;
+filY=fft(fily,N);
+f=(-N/2:N/2-1)*fs/N;
+subplot(1,2,2)
+plot(f,abs(fftshift(filY))/N); title("after filter signal2")
+
+
+
+
+
+
+
+
